@@ -48,6 +48,8 @@ func runEncode(args []string) error {
 	audio := fs.Bool("audio", false, "also encode data into audio track")
 	background := fs.String("background", "", "embed cells into an existing video (path)")
 	password := fs.String("password", "", "encrypt data with password")
+	text := fs.String("text", "", "encode text string directly (no file needed)")
+	minSec := fs.Float64("min-sec", 0, "minimum video duration in seconds (pad frames)")
 
 	fs.Parse(args)
 
@@ -94,19 +96,20 @@ func runEncode(args []string) error {
 			}
 		}
 	}
-	if len(inputFiles) == 0 {
+	if len(inputFiles) == 0 && *text == "" {
 		return fmt.Errorf("no input files specified")
 	}
 
 	cfg := &pipeline.EncodeConfig{
-		Video:      vc,
-		RS:         rs,
-		Output:     *output,
-		FPS:        *fps,
-		CRF:        *crf,
-		Audio:      *audio,
-		Background: *background,
-		Password:   *password,
+		Video:       vc,
+		RS:          rs,
+		Output:      *output,
+		FPS:         *fps,
+		CRF:         *crf,
+		Audio:       *audio,
+		Background:  *background,
+		Password:    *password,
+		MinDuration: *minSec,
 	}
 
 	outDir := filepath.Dir(*output)
@@ -117,7 +120,10 @@ func runEncode(args []string) error {
 	var data []byte
 	var label string
 
-	if len(inputFiles) == 1 {
+	if *text != "" {
+		label = "text"
+		data = []byte(*text)
+	} else if len(inputFiles) == 1 {
 		var err error
 		label = filepath.Base(inputFiles[0])
 		data, err = os.ReadFile(inputFiles[0])

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,16 +20,17 @@ import (
 )
 
 type EncodeConfig struct {
-	Video      vcodec.Config
-	RS         *ecc.ReedSolomon
-	Input      string
-	Inputs     []string
-	Output     string
-	FPS        int
-	CRF        int
-	Audio      bool
-	Background string
-	Password   string
+	Video       vcodec.Config
+	RS          *ecc.ReedSolomon
+	Input       string
+	Inputs      []string
+	Output      string
+	FPS         int
+	CRF         int
+	Audio       bool
+	Background  string
+	Password    string
+	MinDuration float64
 }
 
 func DefaultEncodeConfig() (*EncodeConfig, error) {
@@ -194,6 +196,13 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		totalFrames = 1
 	}
 
+	if cfg.MinDuration > 0 {
+		minFrames := int(math.Ceil(cfg.MinDuration * float64(cfg.FPS)))
+		if minFrames > totalFrames {
+			totalFrames = minFrames
+		}
+	}
+
 	var bgDir string
 	var bgFrameCount int
 	if cfg.Background != "" {
@@ -220,12 +229,15 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 	headerBuf := make([]byte, formats.FrameHeaderSize*2)
 
 	for f := 0; f < totalFrames; f++ {
+		var chunk []byte
 		start := f * payloadPerFrame
-		end := start + payloadPerFrame
-		if end > len(data) {
-			end = len(data)
+		if start < len(data) {
+			end := start + payloadPerFrame
+			if end > len(data) {
+				end = len(data)
+			}
+			chunk = data[start:end]
 		}
-		chunk := data[start:end]
 
 		fh := formats.NewFrameHeader(uint32(f), uint32(totalFrames), uint32(len(chunk)))
 		fullHeader := fh.MarshalFull(uint32(totalFrames), uint32(len(chunk)))

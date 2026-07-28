@@ -7,6 +7,9 @@
 way that survives video platform re-encoding. Default resolution 1920×1080,
 configurable to any size ≥64×64.**
 
+**Any file format works** — PDF, ZIP, images, executables, plain text.
+Everything is treated as raw bytes.
+
 Data is stored as a visual grid of gray-level cells in each video frame,
 protected by Reed-Solomon error correction. An optional MFSK audio channel
 provides a secondary low-rate carrier.
@@ -81,6 +84,25 @@ ystore decode --input bundle.mp4 --output-dir ./extracted
 If the video contains a bundled archive, files are extracted to the given
 directory. Single files are written as `output.bin`.
 
+### Encode a text string directly (no file)
+
+```bash
+ystore encode --text "Hello, secret world" --output msg.mp4
+```
+
+Useful for quick messages or passwords. No need to create a temp file.
+
+### Control video duration
+
+```bash
+ystore encode --text "hello" --min-sec 5 --output msg.mp4
+```
+
+Small payloads produce very short videos (1 frame ≈ 0.03s at 30 fps).
+YouTube requires videos to be at least a few seconds long. Use
+`--min-sec` to ensure the output video has a minimum duration.
+Extra frames are empty (zero payload) and ignored during decode.
+
 ### Encode over an existing video (background)
 
 ```bash
@@ -132,6 +154,8 @@ error: <code>cipher: message authentication failed (wrong password?)</code>
 |------|---------|-------------|
 | `--input` | — | Input file to encode (repeatable: `--input a.pdf --input b.pdf`) |
 | `--input-dir` | — | Encode all files in a directory |
+| `--text` | — | Encode text string directly (no file needed) |
+| `--min-sec` | `0` | Minimum video duration in seconds (pad frames) |
 | `--output` | `output.mp4` | Output video file |
 | `--cell-size` | `24` | Visual grid cell size in pixels |
 | `--border-size` | `24` | Border width in pixels |

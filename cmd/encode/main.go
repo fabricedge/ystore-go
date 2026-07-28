@@ -51,6 +51,8 @@ func main() {
 	audio := flag.Bool("audio", false, "also encode data into audio track")
 	background := flag.String("background", "", "embed cells into an existing video (path)")
 	password := flag.String("password", "", "encrypt data with password")
+	text := flag.String("text", "", "encode text string directly (no file needed)")
+	minSec := flag.Float64("min-sec", 0, "minimum video duration in seconds (pad frames)")
 
 	showVersion := flag.Bool("version", false, "show version")
 
@@ -61,8 +63,8 @@ func main() {
 		return
 	}
 
-	if len(inputs) == 0 && *inputDir == "" {
-		log.Fatal("either --input or --input-dir is required")
+	if len(inputs) == 0 && *inputDir == "" && *text == "" {
+		log.Fatal("either --input, --input-dir, or --text is required")
 	}
 
 	outDir := filepath.Dir(*output)
@@ -124,14 +126,15 @@ func main() {
 	}
 
 	cfg := &pipeline.EncodeConfig{
-		Video:      vc,
-		RS:         rs,
-		Output:     *output,
-		FPS:        *fps,
-		CRF:        *crf,
-		Audio:      *audio,
-		Background: *background,
-		Password:   *password,
+		Video:       vc,
+		RS:          rs,
+		Output:      *output,
+		FPS:         *fps,
+		CRF:         *crf,
+		Audio:       *audio,
+		Background:  *background,
+		Password:    *password,
+		MinDuration: *minSec,
 	}
 
 	payloadPerFrame := cfg.PayloadPerFrame()
@@ -142,7 +145,10 @@ func main() {
 	var label string
 	var data []byte
 
-	if len(inputFiles) == 1 {
+	if *text != "" {
+		label = "text"
+		data = []byte(*text)
+	} else if len(inputFiles) == 1 {
 		var err error
 		label = filepath.Base(inputFiles[0])
 		data, err = os.ReadFile(inputFiles[0])

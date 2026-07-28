@@ -289,7 +289,12 @@
 
     <p class="hero-sub text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-2">
       Encode any file into an H.264 video using a visual grid of gray-level cells.
-      Protected by Reed-Solomon error correction. <span class="text-white font-medium">Survives re-encoding.</span>
+      Protected by Reed-Solomon error correction.   <span class="text-white font-medium">Survives re-encoding.</span>
+    </p>
+
+    <p class="text-gray-500 text-sm mt-2 max-w-2xl mx-auto animate-fade-in-up delay-1">
+      Any file format works — PDF, ZIP, images, executables, plain text.
+      Everything is treated as raw bytes.
     </p>
 
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-3">
@@ -527,6 +532,27 @@
           <span class="cmt"># Wrong password: "cipher: message authentication failed"</span>
         </div>
       </div>
+
+      <!-- text string -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-5">
+        <h3 class="text-lg font-semibold text-white mb-1">Text string</h3>
+        <p class="text-gray-500 text-sm mb-4">Encode text directly, no file needed.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--text</span> "Hello, world!" <span class="kw">--output</span> msg.mp4<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> msg.mp4 <span class="kw">--output</span> restored.txt<br>
+          <span class="cmt"># restored.txt contains "Hello, world!"</span>
+        </div>
+      </div>
+
+      <!-- video duration -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-5">
+        <h3 class="text-lg font-semibold text-white mb-1">Video duration</h3>
+        <p class="text-gray-500 text-sm mb-4">Ensure video is long enough for YouTube.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--text</span> "secret" <span class="kw">--min-sec</span> 5 <span class="kw">--output</span> long.mp4<br>
+          <span class="cmt"># Produces a 5-second video. Extra frames are empty, ignored on decode.</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -552,6 +578,8 @@
           <tbody>
             <tr><td><code>--input</code></td><td class="text-gray-500">—</td><td>Input file (repeatable)</td></tr>
             <tr><td><code>--input-dir</code></td><td class="text-gray-500">—</td><td>Encode all files in a directory</td></tr>
+            <tr><td><code>--text</code></td><td class="text-gray-500">—</td><td>Encode text string directly (no file)</td></tr>
+            <tr><td><code>--min-sec</code></td><td><code>0</code></td><td>Minimum video duration in seconds</td></tr>
             <tr><td><code>--output</code></td><td><code>output.mp4</code></td><td>Output video file</td></tr>
             <tr><td><code>--cell-size</code></td><td><code>24</code></td><td>Grid cell size in pixels</td></tr>
             <tr><td><code>--border-size</code></td><td><code>24</code></td><td>Border width in pixels</td></tr>
