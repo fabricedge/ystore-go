@@ -547,10 +547,12 @@
       <!-- video duration -->
       <div class="card-glass rounded-2xl p-8 reveal delay-5">
         <h3 class="text-lg font-semibold text-white mb-1">Video duration</h3>
-        <p class="text-gray-500 text-sm mb-4">Ensure video is long enough for YouTube.</p>
+        <p class="text-gray-500 text-sm mb-4">Match or override length with --min-sec.</p>
         <div class="code-block text-sm">
-          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--text</span> "secret" <span class="kw">--min-sec</span> 5 <span class="kw">--output</span> long.mp4<br>
-          <span class="cmt"># Produces a 5-second video. Extra frames are empty, ignored on decode.</span>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--output</span> full.mp4<br>
+          <span class="cmt"># Default: output length matches drone.mp4 (3s)</span><br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--min-sec</span> 1 <span class="kw">--output</span> short.mp4<br>
+          <span class="cmt"># --min-sec overrides: output is 1s</span>
         </div>
       </div>
     </div>
@@ -579,7 +581,7 @@
             <tr><td><code>--input</code></td><td class="text-gray-500">—</td><td>Input file (repeatable)</td></tr>
             <tr><td><code>--input-dir</code></td><td class="text-gray-500">—</td><td>Encode all files in a directory</td></tr>
             <tr><td><code>--text</code></td><td class="text-gray-500">—</td><td>Encode text string directly (no file)</td></tr>
-            <tr><td><code>--min-sec</code></td><td><code>0</code></td><td>Minimum video duration in seconds</td></tr>
+            <tr><td><code>--min-sec</code></td><td><code>0</code></td><td>Min duration in seconds (defaults to bg length with --background)</td></tr>
             <tr><td><code>--output</code></td><td><code>output.mp4</code></td><td>Output video file</td></tr>
             <tr><td><code>--cell-size</code></td><td><code>24</code></td><td>Grid cell size in pixels</td></tr>
             <tr><td><code>--border-size</code></td><td><code>24</code></td><td>Border width in pixels</td></tr>

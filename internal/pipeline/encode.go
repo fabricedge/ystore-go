@@ -196,13 +196,6 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		totalFrames = 1
 	}
 
-	if cfg.MinDuration > 0 {
-		minFrames := int(math.Ceil(cfg.MinDuration * float64(cfg.FPS)))
-		if minFrames > totalFrames {
-			totalFrames = minFrames
-		}
-	}
-
 	var bgDir string
 	var bgFrameCount int
 	if cfg.Background != "" {
@@ -223,6 +216,16 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		bgFrameCount = len(bgFrames)
 		if bgFrameCount == 0 {
 			return fmt.Errorf("no frames extracted from background video")
+		}
+	}
+
+	if cfg.Background != "" && cfg.MinDuration == 0 && bgFrameCount > 0 {
+		cfg.MinDuration = float64(bgFrameCount) / float64(cfg.FPS)
+	}
+	if cfg.MinDuration > 0 {
+		minFrames := int(math.Ceil(cfg.MinDuration * float64(cfg.FPS)))
+		if minFrames > totalFrames {
+			totalFrames = minFrames
 		}
 	}
 
