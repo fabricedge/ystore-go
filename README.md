@@ -104,6 +104,8 @@ backup if the video track is damaged.
 | `--cell-size` | `24` | Visual grid cell size in pixels |
 | `--border-size` | `24` | Border width in pixels |
 | `--bits-per-cell` | `2` | Bits per cell (1–8) |
+| `--width` | `1920` | Video width in pixels |
+| `--height` | `1080` | Video height in pixels |
 | `--fps` | `30` | Output video framerate |
 | `--crf` | `18` | H.264 quality (lower = better, 0–51) |
 | `--data-shards` | `0` | RS data shards (0 = auto) |
@@ -121,6 +123,8 @@ backup if the video track is damaged.
 | `--cell-size` | `24` | Visual grid cell size in pixels |
 | `--border-size` | `24` | Border width in pixels |
 | `--bits-per-cell` | `2` | Bits per cell (1–8) |
+| `--width` | `1920` | Video width in pixels (must match encode) |
+| `--height` | `1080` | Video height in pixels (must match encode) |
 | `--fps` | `30` | Video framerate used during encode |
 | `--data-shards` | `0` | RS data shards (0 = auto) |
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
@@ -177,6 +181,7 @@ typical H.264 compression artifacts at CRF 18.
 
 | Parameter | Effect | Recommendation |
 |-----------|--------|---------------|
+| `--width` / `--height` | Larger = more cells, more data per frame | 1920×1080 for maximum capacity |
 | `--cell-size` | Larger = more robust, fewer cells | 24 (default) for video platforms |
 | `--bits-per-cell` | Higher = more data, less robust | 2 (default) for video platforms; 1 for extreme robustness; 3–4 for experiments |
 | `--crf` | Lower = better quality, larger file | 18 (default); 23 for smaller files |

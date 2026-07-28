@@ -39,6 +39,8 @@ func main() {
 	cellSize := flag.Int("cell-size", 24, "visual grid cell size in pixels")
 	borderSize := flag.Int("border-size", 24, "border size in pixels")
 	bitsPerCell := flag.Int("bits-per-cell", 2, "bits encoded per cell (1-8)")
+	width := flag.Int("width", 1920, "video width in pixels")
+	height := flag.Int("height", 1080, "video height in pixels")
 	fps := flag.Int("fps", 30, "output video framerate")
 	crf := flag.Int("crf", 18, "H.264 quality (lower=better, 0-51)")
 
@@ -52,7 +54,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println("ystore-go encode v0.1.0")
+		fmt.Println("ystore-go encode v0.3.0")
 		return
 	}
 
@@ -69,6 +71,8 @@ func main() {
 		CellSize:    *cellSize,
 		BorderSize:  *borderSize,
 		BitsPerCell: *bitsPerCell,
+		Width:       *width,
+		Height:      *height,
 	}
 
 	if err := vc.Validate(); err != nil {

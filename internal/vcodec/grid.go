@@ -11,14 +11,16 @@ const (
 	DefaultBorderSize  = 24
 	DefaultBitsPerCell = 2
 	DefaultGuardPixels = 4
-	VideoWidth         = 1920
-	VideoHeight        = 1080
+	DefaultWidth       = 1920
+	DefaultHeight      = 1080
 )
 
 type Config struct {
 	CellSize    int
 	BorderSize  int
 	BitsPerCell int
+	Width       int
+	Height      int
 }
 
 func DefaultConfig() Config {
@@ -26,16 +28,18 @@ func DefaultConfig() Config {
 		CellSize:    DefaultCellSize,
 		BorderSize:  DefaultBorderSize,
 		BitsPerCell: DefaultBitsPerCell,
+		Width:       DefaultWidth,
+		Height:      DefaultHeight,
 	}
 }
 
 func (c Config) CellsPerRow() int {
-	usable := VideoWidth - 2*c.BorderSize
+	usable := c.Width - 2*c.BorderSize
 	return usable / c.CellSize
 }
 
 func (c Config) CellsPerCol() int {
-	usable := VideoHeight - 2*c.BorderSize
+	usable := c.Height - 2*c.BorderSize
 	return usable / c.CellSize
 }
 
@@ -65,6 +69,12 @@ func (c Config) Validate() error {
 	if c.BitsPerCell < 1 || c.BitsPerCell > 8 {
 		return fmt.Errorf("BitsPerCell must be 1-8")
 	}
+	if c.Width < 64 || c.Width > 7680 {
+		return fmt.Errorf("Width must be 64-7680")
+	}
+	if c.Height < 64 || c.Height > 4320 {
+		return fmt.Errorf("Height must be 64-4320")
+	}
 	if c.CellsPerRow() < 1 || c.CellsPerCol() < 1 {
 		return fmt.Errorf("grid too small: %dx%d cells", c.CellsPerRow(), c.CellsPerCol())
 	}
@@ -89,10 +99,10 @@ func guardPixels(cellSize int) int {
 }
 
 func (c Config) NewFrame() *image.RGBA {
-	img := image.NewRGBA(image.Rect(0, 0, VideoWidth, VideoHeight))
+	img := image.NewRGBA(image.Rect(0, 0, c.Width, c.Height))
 	bg := color.RGBA{R: 128, G: 128, B: 128, A: 255}
-	for y := 0; y < VideoHeight; y++ {
-		for x := 0; x < VideoWidth; x++ {
+	for y := 0; y < c.Height; y++ {
+		for x := 0; x < c.Width; x++ {
 			img.Set(x, y, bg)
 		}
 	}

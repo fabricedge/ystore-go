@@ -37,6 +37,8 @@ func runEncode(args []string) error {
 	cellSize := fs.Int("cell-size", 24, "visual grid cell size in pixels")
 	borderSize := fs.Int("border-size", 24, "border size in pixels")
 	bitsPerCell := fs.Int("bits-per-cell", 2, "bits encoded per cell (1-8)")
+	width := fs.Int("width", 1920, "video width in pixels")
+	height := fs.Int("height", 1080, "video height in pixels")
 	fps := fs.Int("fps", 30, "output video framerate")
 	crf := fs.Int("crf", 18, "H.264 quality (lower=better, 0-51)")
 	dataShards := fs.Int("data-shards", 0, "RS data shards (0=auto)")
@@ -50,6 +52,8 @@ func runEncode(args []string) error {
 		CellSize:    *cellSize,
 		BorderSize:  *borderSize,
 		BitsPerCell: *bitsPerCell,
+		Width:       *width,
+		Height:      *height,
 	}
 
 	if err := vc.Validate(); err != nil {
@@ -158,6 +162,8 @@ func runDecode(args []string) error {
 	cellSize := fs.Int("cell-size", 24, "visual grid cell size in pixels")
 	borderSize := fs.Int("border-size", 24, "border size in pixels")
 	bitsPerCell := fs.Int("bits-per-cell", 2, "bits encoded per cell (1-8)")
+	width := fs.Int("width", 1920, "video width in pixels")
+	height := fs.Int("height", 1080, "video height in pixels")
 	fps := fs.Int("fps", 30, "video framerate used during encode")
 	dataShards := fs.Int("data-shards", 0, "RS data shards (0=auto)")
 	parityShards := fs.Int("parity-shards", 0, "RS parity shards (0=auto)")
@@ -174,6 +180,8 @@ func runDecode(args []string) error {
 		CellSize:    *cellSize,
 		BorderSize:  *borderSize,
 		BitsPerCell: *bitsPerCell,
+		Width:       *width,
+		Height:      *height,
 	}
 
 	if err := vc.Validate(); err != nil {
@@ -225,7 +233,7 @@ func main() {
 	log.SetFlags(0)
 
 	if len(os.Args) >= 2 && os.Args[1] == "--version" {
-		fmt.Println("ystore-go v0.1.0")
+		fmt.Println("ystore-go v0.3.0")
 		return
 	}
 
