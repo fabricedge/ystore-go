@@ -49,6 +49,7 @@ func main() {
 	parityShards := flag.Int("parity-shards", 0, "Reed-Solomon parity shards (0=auto)")
 	shardSize := flag.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := flag.Bool("audio", false, "also encode data into audio track")
+	background := flag.String("background", "", "embed cells into an existing video (path)")
 
 	showVersion := flag.Bool("version", false, "show version")
 
@@ -72,8 +73,8 @@ func main() {
 		CellSize:    *cellSize,
 		BorderSize:  *borderSize,
 		BitsPerCell: *bitsPerCell,
-		Width:       *width,
-		Height:      *height,
+		Width:  *width,
+		Height: *height,
 	}
 
 	if err := vc.Validate(); err != nil {
@@ -122,12 +123,13 @@ func main() {
 	}
 
 	cfg := &pipeline.EncodeConfig{
-		Video:  vc,
-		RS:     rs,
-		Output: *output,
-		FPS:    *fps,
-		CRF:    *crf,
-		Audio:  *audio,
+		Video:      vc,
+		RS:         rs,
+		Output:     *output,
+		FPS:        *fps,
+		CRF:        *crf,
+		Audio:      *audio,
+		Background: *background,
 	}
 
 	payloadPerFrame := cfg.PayloadPerFrame()

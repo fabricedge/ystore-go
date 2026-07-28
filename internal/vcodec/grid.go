@@ -144,6 +144,10 @@ func (c Config) DrawCell(img *image.RGBA, col, row int, value uint8) {
 	}
 }
 
+func (c Config) DrawCellBlend(img *image.RGBA, col, row int, value uint8) {
+	c.DrawCell(img, col, row, value)
+}
+
 func (c Config) ReadCell(img image.Image, col, row int) uint8 {
 	rect := c.CellRect(col, row)
 	guard := guardPixels(c.CellSize)

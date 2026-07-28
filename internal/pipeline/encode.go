@@ -3,6 +3,7 @@ package pipeline
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"image/png"
 	"os"
 	"os/exec"
@@ -17,14 +18,15 @@ import (
 )
 
 type EncodeConfig struct {
-	Video   vcodec.Config
-	RS      *ecc.ReedSolomon
-	Input   string
-	Inputs  []string
-	Output  string
-	FPS     int
-	CRF     int
-	Audio   bool
+	Video      vcodec.Config
+	RS         *ecc.ReedSolomon
+	Input      string
+	Inputs     []string
+	Output     string
+	FPS        int
+	CRF        int
+	Audio      bool
+	Background string
 }
 
 func DefaultEncodeConfig() (*EncodeConfig, error) {
@@ -182,6 +184,29 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		totalFrames = 1
 	}
 
+	var bgDir string
+	var bgFrameCount int
+	if cfg.Background != "" {
+		bgDir, err = os.MkdirTemp("", "ystore-bg-*")
+		if err != nil {
+			return fmt.Errorf("creating bg temp dir: %w", err)
+		}
+		defer os.RemoveAll(bgDir)
+
+		if err := extractFrames(ffmpegPath, cfg.Background, bgDir, cfg.FPS); err != nil {
+			return fmt.Errorf("extracting background frames: %w", err)
+		}
+
+		bgFrames, err := GetFrameFiles(bgDir, 0)
+		if err != nil {
+			return fmt.Errorf("listing background frames: %w", err)
+		}
+		bgFrameCount = len(bgFrames)
+		if bgFrameCount == 0 {
+			return fmt.Errorf("no frames extracted from background video")
+		}
+	}
+
 	headerBuf := make([]byte, formats.FrameHeaderSize*2)
 
 	for f := 0; f < totalFrames; f++ {
@@ -213,22 +238,60 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 			encoded = padded
 		}
 
-		img, err := vcodec.EncodeFrame(cfg.Video, encoded)
-		if err != nil {
-			return fmt.Errorf("encode frame %d: %w", f, err)
-		}
+		if cfg.Background != "" && bgFrameCount > 0 {
+			bgIdx := f % bgFrameCount
+			bgFrameList, _ := GetFrameFiles(bgDir, bgFrameCount)
+			bgPath := bgFrameList[bgIdx]
 
-		framePath := filepath.Join(tmpDir, fmt.Sprintf("frame_%05d.png", f))
+			bgFH, err := os.Open(bgPath)
+			if err != nil {
+				return fmt.Errorf("opening bg frame %s: %w", bgPath, err)
+			}
+			bgImg, err := png.Decode(bgFH)
+			bgFH.Close()
+			if err != nil {
+				return fmt.Errorf("decoding bg frame: %w", err)
+			}
 
-		fhOut, err := os.Create(framePath)
-		if err != nil {
-			return fmt.Errorf("creating frame file: %w", err)
-		}
-		if err := png.Encode(fhOut, img); err != nil {
+			bgRGBA := image.NewRGBA(bgImg.Bounds())
+			for y := 0; y < bgRGBA.Bounds().Dy(); y++ {
+				for x := 0; x < bgRGBA.Bounds().Dx(); x++ {
+					bgRGBA.Set(x, y, bgImg.At(x, y))
+				}
+			}
+
+			img, err := vcodec.EncodeFrameBlend(cfg.Video, encoded, bgRGBA)
+			if err != nil {
+				return fmt.Errorf("encode blended frame %d: %w", f, err)
+			}
+
+			framePath := filepath.Join(tmpDir, fmt.Sprintf("frame_%05d.png", f))
+			fhOut, err := os.Create(framePath)
+			if err != nil {
+				return fmt.Errorf("creating frame file: %w", err)
+			}
+			if err := png.Encode(fhOut, img); err != nil {
+				fhOut.Close()
+				return fmt.Errorf("encoding PNG: %w", err)
+			}
 			fhOut.Close()
-			return fmt.Errorf("encoding PNG: %w", err)
+		} else {
+			img, err := vcodec.EncodeFrame(cfg.Video, encoded)
+			if err != nil {
+				return fmt.Errorf("encode frame %d: %w", f, err)
+			}
+
+			framePath := filepath.Join(tmpDir, fmt.Sprintf("frame_%05d.png", f))
+			fhOut, err := os.Create(framePath)
+			if err != nil {
+				return fmt.Errorf("creating frame file: %w", err)
+			}
+			if err := png.Encode(fhOut, img); err != nil {
+				fhOut.Close()
+				return fmt.Errorf("encoding PNG: %w", err)
+			}
+			fhOut.Close()
 		}
-		fhOut.Close()
 	}
 
 	if cfg.Audio {

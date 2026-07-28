@@ -81,6 +81,16 @@ ystore decode --input bundle.mp4 --output-dir ./extracted
 If the video contains a bundled archive, files are extracted to the given
 directory. Single files are written as `output.bin`.
 
+### Encode over an existing video (background)
+
+```bash
+ystore encode --input secret.pdf --background some_video.mp4 --output blended.mp4
+```
+
+The cell grid is drawn on top of the background video; non-cell areas (borders,
+guard bands) show the original background content. The background video must
+match the configured `--width` and `--height`; ffmpeg resizes frames to match.
+
 ### Encode with custom resolution
 
 ```bash
@@ -121,6 +131,7 @@ backup if the video track is damaged.
 | `--data-shards` | `0` | RS data shards (0 = auto) |
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
+| `--background` | — | Embed cells into an existing video (path to .mp4) |
 | `--audio` | `false` | Also encode data into audio track |
 
 ### ystore decode
@@ -141,7 +152,7 @@ backup if the video track is damaged.
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
 | `--audio` | `false` | Extract data from audio instead of video |
 
-> **Tip:** `ystore --version` prints the version and exits.
+> **Tip:** `ystore --version` prints the version and exits. Standalone binaries also support `--version` (e.g. `ystore-encode --version`).
 
 ---
 
@@ -203,8 +214,8 @@ typical H.264 compression artifacts at CRF 18.
 
 - Video platforms may change codecs (VP9, AV1). The visual grid approach survives
   because it relies on perceptual preservation, not codec specifics.
-- High-motion scenes may blur grid cells. Mitigation: use static/solid
-  backgrounds in the video.
+- When using `--background`, cell areas are drawn at full opacity — the
+  background is only visible in non-cell regions (borders, guard bands).
 - Audio channel is low-rate (~60 bps). Use it for redundancy, not primary
   transport of large payloads.
 - ffmpeg must be installed separately.

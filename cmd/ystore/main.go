@@ -46,6 +46,7 @@ func runEncode(args []string) error {
 	parityShards := fs.Int("parity-shards", 0, "RS parity shards (0=auto)")
 	shardSize := fs.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := fs.Bool("audio", false, "also encode data into audio track")
+	background := fs.String("background", "", "embed cells into an existing video (path)")
 
 	fs.Parse(args)
 
@@ -53,8 +54,8 @@ func runEncode(args []string) error {
 		CellSize:    *cellSize,
 		BorderSize:  *borderSize,
 		BitsPerCell: *bitsPerCell,
-		Width:       *width,
-		Height:      *height,
+		Width:  *width,
+		Height: *height,
 	}
 
 	if err := vc.Validate(); err != nil {
@@ -97,12 +98,13 @@ func runEncode(args []string) error {
 	}
 
 	cfg := &pipeline.EncodeConfig{
-		Video:  vc,
-		RS:     rs,
-		Output: *output,
-		FPS:    *fps,
-		CRF:    *crf,
-		Audio:  *audio,
+		Video:      vc,
+		RS:         rs,
+		Output:     *output,
+		FPS:        *fps,
+		CRF:        *crf,
+		Audio:      *audio,
+		Background: *background,
 	}
 
 	outDir := filepath.Dir(*output)
