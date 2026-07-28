@@ -113,8 +113,8 @@ The cell grid is drawn on top of the background video; non-cell areas (borders,
 guard bands) show the original background content. The background video must
 match the configured `--width` and `--height`; ffmpeg resizes frames to match.
 
-**Duration:** the output video is padded to match the background video length by
-default. Use `--min-sec` to reduce or extend it.
+**Duration:** by default the output is as short as the data requires (minimal
+file size). Add `--full` to match the background video's full length.
 
 ### Encode with custom resolution
 
@@ -158,7 +158,8 @@ error: <code>cipher: message authentication failed (wrong password?)</code>
 | `--input` | — | Input file to encode (repeatable: `--input a.pdf --input b.pdf`) |
 | `--input-dir` | — | Encode all files in a directory |
 | `--text` | — | Encode text string directly (no file needed) |
-| `--min-sec` | `0` | Min duration in seconds (defaults to bg length with `--background`) |
+| `--min-sec` | `0` | Min duration in seconds |
+| `--full` | `false` | Match background video duration (requires `--background`) |
 | `--output` | `output.mp4` | Output video file |
 | `--cell-size` | `24` | Visual grid cell size in pixels |
 | `--border-size` | `24` | Border width in pixels |
