@@ -177,6 +177,15 @@ Smaller resolutions proportionally reduce capacity.
 A guard band (4 px) around each cell avoids edge artifacts from H.264
 compression. Reed-Solomon corrects any remaining bit errors.
 
+### Why it survives re-encoding
+
+The cell grid is engineered to survive lossy compression. Each 24×24 px cell
+spans multiple H.264 16×16 macroblocks, so no single macroblock decision can
+erase it. Guard bands absorb edge artifacts. With only 4 gray levels (2
+bits/cell), the decoder identifies the correct cell value even after luminance
+drift from CRF-18 re-encoding. Reed-Solomon (~10% parity) handles the few cells
+that do get corrupted.
+
 ### Audio Channel (Secondary)
 
 ```

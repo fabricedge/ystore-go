@@ -279,7 +279,7 @@
   <div class="max-w-4xl mx-auto text-center relative z-10">
     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-8 animate-fade-in">
       <span class="badge-dot"></span>
-      <span>v0.3.1 · Open source · <span class="text-cyan-400">MIT</span></span>
+      <span>v0.4.0 · Open source · <span class="text-cyan-400">MIT</span></span>
     </div>
 
     <h1 class="hero-title text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6 animate-fade-in-up">
@@ -421,6 +421,24 @@
       </div>
     </div>
 
+    <!-- survival callout -->
+    <div class="mt-10 card-glass rounded-2xl p-6 reveal" style="border-color: rgba(6, 182, 212, 0.25);">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-1">Why it survives re-encoding</h4>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            The cell grid survives YouTube's H.264 re-encoding because each 24×24 px cell
+            spans multiple 16×16 macroblocks — no single compression decision erases it.
+            Guard bands absorb edge artifacts, coarse gray levels tolerate luminance drift,
+            and Reed-Solomon corrects the few cells that do flip.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- resolution note -->
     <div class="mt-8 text-center text-sm text-gray-500 reveal">
       Resolution is configurable via <code class="text-cyan-400 font-mono">--width</code> / <code class="text-cyan-400 font-mono">--height</code>.
@@ -487,6 +505,17 @@
           <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--width</span> 640 <span class="kw">--height</span> 480 <span class="kw">--input</span> video.mp4
         </div>
       </div>
+
+      <!-- background video -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-4">
+        <h3 class="text-lg font-semibold text-white mb-1">Background video</h3>
+        <p class="text-gray-500 text-sm mb-4">Embed data over an existing video.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--output</span> blended.mp4<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> blended.mp4 <span class="kw">--output</span> restored.txt<br>
+          <span class="cmt"># Non-cell areas show drone.mp4 frames</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -524,6 +553,7 @@
             <tr><td><code>--parity-shards</code></td><td><code>0</code></td><td>RS parity shards (0=auto)</td></tr>
             <tr><td><code>--shard-size</code></td><td><code>0</code></td><td>Bytes per RS shard (0=auto)</td></tr>
             <tr><td><code>--audio</code></td><td><code>false</code></td><td>Also encode into audio track</td></tr>
+            <tr><td><code>--background</code></td><td class="text-gray-500">—</td><td>Embed cells into an existing video (path)</td></tr>
           </tbody>
         </table>
       </div>
@@ -653,7 +683,7 @@
       <a href="#features" class="hover:text-white transition-colors">Features</a>
       <span class="flex items-center gap-1.5">
         <span class="badge-dot" style="width:6px;height:6px;"></span>
-        v0.3.1
+        v0.4.0
       </span>
     </div>
   </div>
