@@ -231,11 +231,6 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		fhOut.Close()
 	}
 
-	videoPath := filepath.Join(tmpDir, "video.mp4")
-	if err := createVideo(ffmpegPath, tmpDir, totalFrames, cfg.FPS, cfg.CRF, videoPath); err != nil {
-		return fmt.Errorf("creating video: %w", err)
-	}
-
 	if cfg.Audio {
 		audioPath := filepath.Join(tmpDir, "audio.wav")
 		audioCfg := acodec.DefaultMFSKConfig()
@@ -247,16 +242,17 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 			return fmt.Errorf("writing audio: %w", err)
 		}
 
-		muxedPath := filepath.Join(tmpDir, "muxed.mp4")
-		if err := muxAudioVideo(ffmpegPath, videoPath, audioPath, muxedPath); err != nil {
+		videoPath := filepath.Join(tmpDir, "video.mp4")
+		if err := createVideo(ffmpegPath, tmpDir, totalFrames, cfg.FPS, cfg.CRF, videoPath); err != nil {
+			return fmt.Errorf("creating video: %w", err)
+		}
+
+		if err := muxAudioVideo(ffmpegPath, videoPath, audioPath, cfg.Output); err != nil {
 			return fmt.Errorf("muxing audio: %w", err)
 		}
-		if err := os.Rename(muxedPath, cfg.Output); err != nil {
-			return fmt.Errorf("renaming output: %w", err)
-		}
 	} else {
-		if err := os.Rename(videoPath, cfg.Output); err != nil {
-			return fmt.Errorf("renaming output: %w", err)
+		if err := createVideo(ffmpegPath, tmpDir, totalFrames, cfg.FPS, cfg.CRF, cfg.Output); err != nil {
+			return fmt.Errorf("creating video: %w", err)
 		}
 	}
 

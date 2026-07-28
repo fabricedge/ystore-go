@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/katri/ystore-go)](https://goreportcard.com/report/github.com/katri/ystore-go)
 
 **Hide arbitrary data inside 1920×1080 H.264 video files (and their AAC audio
-track) in a way that survives YouTube re-encoding.**
+track) in a way that survives video platform re-encoding.**
 
 Data is stored as a visual grid of gray-level cells in each video frame,
 protected by Reed-Solomon error correction. An optional MFSK audio channel
@@ -29,11 +29,11 @@ Download the pre-built binary for your platform from the
 
 | File | Platform |
 |------|----------|
-| `ystore-encode-linux-amd64` / `ystore-decode-linux-amd64` | Linux x86_64 |
-| `ystore-encode-linux-arm64` / `ystore-decode-linux-arm64` | Linux ARM64 |
-| `ystore-encode-darwin-amd64` / `ystore-decode-darwin-amd64` | macOS Intel |
-| `ystore-encode-darwin-arm64` / `ystore-decode-darwin-arm64` | macOS Apple Silicon |
-| `ystore-encode-windows-amd64.exe` / `ystore-decode-windows-amd64.exe` | Windows x86_64 |
+| `ystore-linux-amd64` | Linux x86_64 |
+| `ystore-linux-arm64` | Linux ARM64 |
+| `ystore-darwin-amd64` | macOS Intel |
+| `ystore-darwin-arm64` | macOS Apple Silicon |
+| `ystore-windows-amd64.exe` | Windows x86_64 |
 
 **Prerequisite:** [ffmpeg](https://ffmpeg.org/) must be installed and in `PATH`.
 
@@ -44,16 +44,16 @@ Download the pre-built binary for your platform from the
 ### Encode a single file into a video
 
 ```bash
-ystore-encode --input secret.pdf --output video.mp4
+ystore encode --input secret.pdf --output video.mp4
 ```
 
-This produces a 1920×1080 H.264 MP4. Upload it to YouTube, share it, store it
-anywhere. The data survives re-encoding.
+This produces a 1920×1080 H.264 MP4. Upload it to a video platform, share it,
+store it anywhere. The data survives re-encoding.
 
 ### Encode multiple files (bundled)
 
 ```bash
-ystore-encode --input doc1.pdf --input doc2.pdf --input doc3.jpg --output bundle.mp4
+ystore encode --input doc1.pdf --input doc2.pdf --input doc3.jpg --output bundle.mp4
 ```
 
 Multiple files are automatically bundled into a tar archive with a magic prefix.
@@ -62,19 +62,19 @@ Decoding auto-detects the bundle.
 ### Encode all files from a directory
 
 ```bash
-ystore-encode --input-dir ./documents --output bundle.mp4
+ystore encode --input-dir ./documents --output bundle.mp4
 ```
 
 ### Decode a video back to the original file
 
 ```bash
-ystore-decode --input video.mp4 --output restored.pdf
+ystore decode --input video.mp4 --output restored.pdf
 ```
 
 ### Decode a multi-file bundle to a directory
 
 ```bash
-ystore-decode --input bundle.mp4 --output-dir ./extracted
+ystore decode --input bundle.mp4 --output-dir ./extracted
 ```
 
 If the video contains a bundled archive, files are extracted to the given
@@ -83,8 +83,8 @@ directory. Single files are written as `output.bin`.
 ### With audio redundancy
 
 ```bash
-ystore-encode --input secret.pdf --output video.mp4 --audio
-ystore-decode --input video.mp4 --output restored.pdf --audio
+ystore encode --input secret.pdf --output video.mp4 --audio
+ystore decode --input video.mp4 --output restored.pdf --audio
 ```
 
 The audio channel carries the same data at a lower rate and can be used as a
@@ -94,7 +94,7 @@ backup if the video track is damaged.
 
 ## CLI Reference
 
-### ystore-encode
+### ystore encode
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -110,9 +110,8 @@ backup if the video track is damaged.
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
 | `--audio` | `false` | Also encode data into audio track |
-| `--version` | — | Print version and exit |
 
-### ystore-decode
+### ystore decode
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -122,12 +121,13 @@ backup if the video track is damaged.
 | `--cell-size` | `24` | Visual grid cell size in pixels |
 | `--border-size` | `24` | Border width in pixels |
 | `--bits-per-cell` | `2` | Bits per cell (1–8) |
-| `--fps` | `30` | Vide framerate used during encode |
+| `--fps` | `30` | Video framerate used during encode |
 | `--data-shards` | `0` | RS data shards (0 = auto) |
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
 | `--audio` | `false` | Extract data from audio instead of video |
-| `--version` | — | Print version and exit |
+
+> **Tip:** `ystore --version` prints the version and exits.
 
 ---
 
@@ -136,12 +136,12 @@ backup if the video track is damaged.
 ### Video Channel (Primary)
 
 ```
-Input File → [Encrypt] → Split into frames → RS Encode →
+Input File → Split into frames → RS Encode →
 Pack into cell gray-levels → Render 1920×1080 frames →
-ffmpeg → H.264 MP4 → Upload to YouTube
+ffmpeg → H.264 MP4 → Upload to video platform
 
 Download → ffmpeg extract frames → Read cell gray-levels →
-RS Decode → Reassemble → [Decrypt] → Original File
+RS Decode → Reassemble → Original File
 ```
 
 Each frame is a grid of 78×43 = 3354 cells (24×24 px each).
@@ -177,15 +177,15 @@ typical H.264 compression artifacts at CRF 18.
 
 | Parameter | Effect | Recommendation |
 |-----------|--------|---------------|
-| `--cell-size` | Larger = more robust, fewer cells | 24 (default) for YouTube |
-| `--bits-per-cell` | Higher = more data, less robust | 2 (default) for YouTube; 1 for extreme robustness; 3–4 for experiments |
+| `--cell-size` | Larger = more robust, fewer cells | 24 (default) for video platforms |
+| `--bits-per-cell` | Higher = more data, less robust | 2 (default) for video platforms; 1 for extreme robustness; 3–4 for experiments |
 | `--crf` | Lower = better quality, larger file | 18 (default); 23 for smaller files |
 
 ---
 
 ## Limitations
 
-- YouTube may change codecs (VP9, AV1). The visual grid approach survives
+- Video platforms may change codecs (VP9, AV1). The visual grid approach survives
   because it relies on perceptual preservation, not codec specifics.
 - High-motion scenes may blur grid cells. Mitigation: use static/solid
   backgrounds in the video.
@@ -198,8 +198,9 @@ typical H.264 compression artifacts at CRF 18.
 ## Project Structure
 
 ```
-├── cmd/encode/       CLI entry point for encoding data into video
-├── cmd/decode/       CLI entry point for extracting data from video
+├── cmd/ystore/       Unified CLI (ystore encode / ystore decode)
+├── cmd/encode/       Standalone encode binary (ystore-encode)
+├── cmd/decode/       Standalone decode binary (ystore-decode)
 ├── internal/
 │   ├── vcodec/       Visual grid codec (cell packing, frame rendering)
 │   ├── acodec/       MFSK audio codec (tone modulation, Goertzel)

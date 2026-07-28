@@ -13,11 +13,26 @@ import (
 	"github.com/katri/ystore-go/internal/vcodec"
 )
 
+type stringSlice []string
+
+func (s *stringSlice) String() string {
+	if len(*s) == 0 {
+		return ""
+	}
+	return (*s)[0]
+}
+
+func (s *stringSlice) Set(v string) error {
+	*s = append(*s, v)
+	return nil
+}
+
 func main() {
 	log.SetFlags(0)
 	log.SetPrefix("encode: ")
 
-	input := flag.String("input", "", "input file to encode (repeatable: --input a.pdf --input b.pdf)")
+	var inputs stringSlice
+	flag.Var(&inputs, "input", "input file to encode (repeatable: --input a.pdf --input b.pdf)")
 	inputDir := flag.String("input-dir", "", "encode all files in a directory")
 	output := flag.String("output", "output.mp4", "output video file")
 
@@ -41,8 +56,8 @@ func main() {
 		return
 	}
 
-	if *input == "" && *inputDir == "" {
-		log.Fatal("either -input or -input-dir is required")
+	if len(inputs) == 0 && *inputDir == "" {
+		log.Fatal("either --input or --input-dir is required")
 	}
 
 	outDir := filepath.Dir(*output)
@@ -79,12 +94,9 @@ func main() {
 		}
 	}
 
-	inputs := flag.Args()
-	if *input != "" {
-		inputs = append([]string{*input}, inputs...)
-	}
-
 	var inputFiles []string
+	inputFiles = append(inputFiles, inputs...)
+
 	if *inputDir != "" {
 		entries, err := os.ReadDir(*inputDir)
 		if err != nil {
@@ -98,12 +110,6 @@ func main() {
 		if len(inputFiles) == 0 {
 			log.Fatalf("no files found in directory %s", *inputDir)
 		}
-	}
-
-	if len(inputs) > 0 && len(inputFiles) > 0 {
-		inputFiles = append(inputs, inputFiles...)
-	} else if len(inputs) > 0 {
-		inputFiles = inputs
 	}
 
 	if len(inputFiles) == 0 {
