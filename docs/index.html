@@ -279,7 +279,7 @@
   <div class="max-w-4xl mx-auto text-center relative z-10">
     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-8 animate-fade-in">
       <span class="badge-dot"></span>
-      <span>v0.4.0 · Open source · <span class="text-cyan-400">MIT</span></span>
+      <span>v0.5.0 · Open source · <span class="text-cyan-400">MIT</span></span>
     </div>
 
     <h1 class="hero-title text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6 animate-fade-in-up">
@@ -516,6 +516,17 @@
           <span class="cmt"># Non-cell areas show drone.mp4 frames</span>
         </div>
       </div>
+
+      <!-- password -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-5">
+        <h3 class="text-lg font-semibold text-white mb-1">Password protection</h3>
+        <p class="text-gray-500 text-sm mb-4">Encrypt data with a password.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--input</span> secret.pdf <span class="kw">--password</span> mypass <span class="kw">--output</span> private.mp4<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> private.mp4 <span class="kw">--password</span> mypass <span class="kw">--output</span> restored.pdf<br>
+          <span class="cmt"># Wrong password: "cipher: message authentication failed"</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -554,6 +565,7 @@
             <tr><td><code>--shard-size</code></td><td><code>0</code></td><td>Bytes per RS shard (0=auto)</td></tr>
             <tr><td><code>--audio</code></td><td><code>false</code></td><td>Also encode into audio track</td></tr>
             <tr><td><code>--background</code></td><td class="text-gray-500">—</td><td>Embed cells into an existing video (path)</td></tr>
+            <tr><td><code>--password</code></td><td class="text-gray-500">—</td><td>Encrypt data with password (AES-256-GCM + Argon2id)</td></tr>
           </tbody>
         </table>
       </div>
@@ -581,6 +593,7 @@
             <tr><td><code>--parity-shards</code></td><td><code>0</code></td><td>RS parity shards (0=auto)</td></tr>
             <tr><td><code>--shard-size</code></td><td><code>0</code></td><td>Bytes per RS shard (0=auto)</td></tr>
             <tr><td><code>--audio</code></td><td><code>false</code></td><td>Extract from audio instead</td></tr>
+            <tr><td><code>--password</code></td><td class="text-gray-500">—</td><td>Decrypt data with password</td></tr>
           </tbody>
         </table>
       </div>
@@ -683,7 +696,7 @@
       <a href="#features" class="hover:text-white transition-colors">Features</a>
       <span class="flex items-center gap-1.5">
         <span class="badge-dot" style="width:6px;height:6px;"></span>
-        v0.4.0
+        v0.5.0
       </span>
     </div>
   </div>

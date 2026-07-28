@@ -110,6 +110,18 @@ ystore decode --input video.mp4 --output restored.pdf --audio
 The audio channel carries the same data at a lower rate and can be used as a
 backup if the video track is damaged.
 
+### With password encryption
+
+```bash
+ystore encode --input secret.pdf --password mypass --output private.mp4
+ystore decode --input private.mp4 --password mypass --output restored.pdf
+```
+
+Data is encrypted with AES-256-GCM before embedding. The encryption key is
+derived from the password via Argon2id (memory-hard KDF) with a random salt.
+Each encode uses a unique salt and nonce. Wrong password produces a clear
+error: <code>cipher: message authentication failed (wrong password?)</code>
+
 ---
 
 ## CLI Reference
@@ -132,6 +144,7 @@ backup if the video track is damaged.
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
 | `--background` | — | Embed cells into an existing video (path to .mp4) |
+| `--password` | — | Encrypt data with password (AES-256-GCM + Argon2id) |
 | `--audio` | `false` | Also encode data into audio track |
 
 ### ystore decode
@@ -151,6 +164,7 @@ backup if the video track is damaged.
 | `--parity-shards` | `0` | RS parity shards (0 = auto) |
 | `--shard-size` | `0` | Bytes per RS shard (0 = auto) |
 | `--audio` | `false` | Extract data from audio instead of video |
+| `--password` | — | Decrypt data with password |
 
 > **Tip:** `ystore --version` prints the version and exits. Standalone binaries also support `--version` (e.g. `ystore-encode --version`).
 
