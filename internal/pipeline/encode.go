@@ -31,7 +31,7 @@ type EncodeConfig struct {
 	Background  string
 	Password    string
 	MinDuration float64
-	Full        bool
+	Short       bool
 }
 
 func DefaultEncodeConfig() (*EncodeConfig, error) {
@@ -220,7 +220,7 @@ func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
 		}
 	}
 
-	if cfg.Background != "" && cfg.Full && bgFrameCount > totalFrames {
+	if cfg.Background != "" && !cfg.Short && bgFrameCount > totalFrames {
 		totalFrames = bgFrameCount
 	}
 	if cfg.MinDuration > 0 {

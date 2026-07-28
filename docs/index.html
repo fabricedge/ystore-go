@@ -547,12 +547,12 @@
       <!-- video duration -->
       <div class="card-glass rounded-2xl p-8 reveal delay-5">
         <h3 class="text-lg font-semibold text-white mb-1">Video duration</h3>
-        <p class="text-gray-500 text-sm mb-4">Minimal or full-length.</p>
+        <p class="text-gray-500 text-sm mb-4">Full disguise by default, or minimal with --short.</p>
         <div class="code-block text-sm">
-          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--output</span> short.mp4<br>
-          <span class="cmt"># Output is as short as the data requires (minimal size)</span><br>
-          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--full</span> <span class="kw">--output</span> full.mp4<br>
-          <span class="cmt"># Output matches drone.mp4 full length</span>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--output</span> full.mp4<br>
+          <span class="cmt"># Default: output matches drone.mp4 full length</span><br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--background</span> drone.mp4 <span class="kw">--input</span> secret.txt <span class="kw">--short</span> <span class="kw">--output</span> short.mp4<br>
+          <span class="cmt"># --short: uses only the minimum frames needed</span>
         </div>
       </div>
     </div>
@@ -581,8 +581,8 @@
             <tr><td><code>--input</code></td><td class="text-gray-500">—</td><td>Input file (repeatable)</td></tr>
             <tr><td><code>--input-dir</code></td><td class="text-gray-500">—</td><td>Encode all files in a directory</td></tr>
             <tr><td><code>--text</code></td><td class="text-gray-500">—</td><td>Encode text string directly (no file)</td></tr>
+            <tr><td><code>--short</code></td><td><code>false</code></td><td>Use minimum frames (no padding to bg length)</td></tr>
             <tr><td><code>--min-sec</code></td><td><code>0</code></td><td>Min duration in seconds</td></tr>
-            <tr><td><code>--full</code></td><td><code>false</code></td><td>Match background video duration</td></tr>
             <tr><td><code>--output</code></td><td><code>output.mp4</code></td><td>Output video file</td></tr>
             <tr><td><code>--cell-size</code></td><td><code>24</code></td><td>Grid cell size in pixels</td></tr>
             <tr><td><code>--border-size</code></td><td><code>24</code></td><td>Border width in pixels</td></tr>

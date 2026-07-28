@@ -49,8 +49,8 @@ func runEncode(args []string) error {
 	background := fs.String("background", "", "embed cells into an existing video (path)")
 	password := fs.String("password", "", "encrypt data with password")
 	text := fs.String("text", "", "encode text string directly (no file needed)")
-	minSec := fs.Float64("min-sec", 0, "min duration in seconds (defaults to bg length with --full)")
-	full := fs.Bool("full", false, "match background video duration (requires --background)")
+	minSec := fs.Float64("min-sec", 0, "min duration in seconds")
+	short := fs.Bool("short", false, "use minimum frames (no padding to bg length)")
 
 	fs.Parse(args)
 
@@ -111,7 +111,7 @@ func runEncode(args []string) error {
 		Background:  *background,
 		Password:    *password,
 		MinDuration: *minSec,
-		Full:        *full,
+		Short:       *short,
 	}
 
 	outDir := filepath.Dir(*output)

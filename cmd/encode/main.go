@@ -52,8 +52,8 @@ func main() {
 	background := flag.String("background", "", "embed cells into an existing video (path)")
 	password := flag.String("password", "", "encrypt data with password")
 	text := flag.String("text", "", "encode text string directly (no file needed)")
-	minSec := flag.Float64("min-sec", 0, "min duration in seconds (defaults to bg length with --full)")
-	full := flag.Bool("full", false, "match background video duration (requires --background)")
+	minSec := flag.Float64("min-sec", 0, "min duration in seconds")
+	short := flag.Bool("short", false, "use minimum frames (no padding to bg length)")
 
 	showVersion := flag.Bool("version", false, "show version")
 
@@ -136,7 +136,7 @@ func main() {
 		Background:  *background,
 		Password:    *password,
 		MinDuration: *minSec,
-		Full:        *full,
+		Short:       *short,
 	}
 
 	payloadPerFrame := cfg.PayloadPerFrame()
