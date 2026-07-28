@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ystore-go — hide data inside video</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── animated grid background ── */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ── gradient text ── */
+    .gradient-text {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-2 {
+      background: linear-gradient(135deg, #2dd4bf, #06b6d4, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── glow ── */
+    .glow-cyan {
+      box-shadow: 0 0 40px -8px rgba(6, 182, 212, 0.15);
+    }
+
+    .glow-cyan-card:hover {
+      box-shadow: 0 0 60px -8px rgba(6, 182, 212, 0.25);
+    }
+
+    /* ── card glass ── */
+    .card-glass {
+      background: linear-gradient(135deg, rgba(19, 19, 26, 0.9), rgba(26, 26, 38, 0.7));
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .card-glass:hover {
+      border-color: rgba(6, 182, 212, 0.3);
+    }
+
+    /* ── code block ── */
+    .code-block {
+      background: #13131a;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    .code-block .cmt { color: #6b7280; }
+    .code-block .cmd { color: #2dd4bf; }
+    .code-block .str { color: #fbbf24; }
+    .code-block .kw  { color: #a78bfa; }
+
+    /* ── animations ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px -8px rgba(6, 182, 212, 0.2); }
+      50%      { box-shadow: 0 0 40px -4px rgba(6, 182, 212, 0.4); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    @keyframes borderGlow {
+      0%, 100% { border-color: rgba(6, 182, 212, 0.2); }
+      50%      { border-color: rgba(6, 182, 212, 0.6); }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .animate-fade-in-up  { animation: fadeInUp 0.7s ease-out both; }
+    .animate-fade-in     { animation: fadeIn 0.8s ease-out both; }
+    .animate-slide-down  { animation: slideDown 0.5s ease-out both; }
+    .animate-pulse-glow  { animation: pulseGlow 3s ease-in-out infinite; }
+    .animate-float       { animation: float 4s ease-in-out infinite; }
+    .animate-border-glow { animation: borderGlow 3s ease-in-out infinite; }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    /* ── scroll-reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── flow arrows ── */
+    .flow-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #06b6d4;
+      transition: all 0.3s ease;
+    }
+    .flow-group:hover .flow-arrow {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #06b6d4;
+      transform: scale(1.1);
+    }
+
+    /* ── tree lines ── */
+    .tree-line {
+      border-left: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* ── table ── */
+    .ref-table td, .ref-table th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ref-table th {
+      color: #9ca3af;
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ref-table tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+    .ref-table code {
+      color: #2dd4bf;
+    }
+
+    /* ── hero terminal cursor ── */
+    .typed-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: #06b6d4;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* ── section divider ── */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(6,182,212,0.3), transparent);
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.25rem !important; line-height: 1.2 !important; }
+      .hero-sub   { font-size: 1rem !important; }
+    }
+
+    /* ── badge pulse ── */
+    .badge-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+
+    /* ── smooth scroll ── */
+    html { scroll-behavior: smooth; }
+
+    ::selection {
+      background: rgba(6, 182, 212, 0.3);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #1e1e2e; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2d2d3f; }
+  </style>
+</head>
+<body class="grid-bg antialiased">
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/5" style="background: rgba(10,10,15,0.85);">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5 group">
+      <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm font-mono group-hover:scale-110 transition-transform">YS</span>
+      <span class="font-semibold text-white text-lg tracking-tight">ystore<strong class="text-cyan-400">-go</strong></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-sm">
+      <a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a>
+      <a href="#how-it-works" class="text-gray-400 hover:text-white transition-colors">How it works</a>
+      <a href="#quickstart" class="text-gray-400 hover:text-white transition-colors">Quick start</a>
+      <a href="#cli" class="text-gray-400 hover:text-white transition-colors">CLI</a>
+      <a href="https://github.com/fabricedge/ystore-go" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <button class="md:hidden text-gray-400" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-3 text-sm">
+    <a href="#features" class="block text-gray-400 hover:text-white">Features</a>
+    <a href="#how-it-works" class="block text-gray-400 hover:text-white">How it works</a>
+    <a href="#quickstart" class="block text-gray-400 hover:text-white">Quick start</a>
+    <a href="#cli" class="block text-gray-400 hover:text-white">CLI</a>
+    <a href="https://github.com/fabricedge/ystore-go" target="_blank" class="block text-cyan-400 hover:text-cyan-300">GitHub →</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="min-h-screen flex items-center justify-center px-6 pt-24 pb-20 relative overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 60%);"></div>
+  <div class="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-cyan-500/5 blur-3xl animate-float"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl animate-float" style="animation-delay: -2s;"></div>
+
+  <div class="max-w-4xl mx-auto text-center relative z-10">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-8 animate-fade-in">
+      <span class="badge-dot"></span>
+      <span>v0.3.1 · Open source · <span class="text-cyan-400">MIT</span></span>
+    </div>
+
+    <h1 class="hero-title text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6 animate-fade-in-up">
+      Hide data inside<br>
+      <span class="gradient-text">video files.</span>
+    </h1>
+
+    <p class="hero-sub text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up delay-2">
+      Encode any file into an H.264 video using a visual grid of gray-level cells.
+      Protected by Reed-Solomon error correction. <span class="text-white font-medium">Survives re-encoding.</span>
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-3">
+      <a href="#quickstart" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm hover:scale-105 transition-transform shadow-lg shadow-cyan-500/20">
+        Get started
+      </a>
+      <a href="https://github.com/fabricedge/ystore-go" target="_blank" class="px-8 py-3.5 rounded-xl border border-white/10 text-gray-300 font-semibold text-sm hover:bg-white/5 hover:text-white transition-all">
+        View on GitHub
+      </a>
+    </div>
+
+    <!-- terminal preview -->
+    <div class="mt-14 max-w-2xl mx-auto text-left animate-fade-in-up delay-4">
+      <div class="code-block glow-cyan">
+        <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--input</span> secret.pdf <span class="kw">--output</span> video.mp4<br>
+        <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> video.mp4 <span class="kw">--output</span> restored.pdf<br>
+        <span class="cmt"># Round-trip verified ✓  50 KB in 2 frames</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section id="features" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        Designed for <span class="gradient-text-2">survival</span>
+      </h2>
+      <p class="text-gray-400 max-w-xl mx-auto">Three layers of protection ensure your data survives video platform re-encoding intact.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Feature 1 -->
+      <div class="card-glass rounded-2xl p-8 glow-cyan-card transition-all duration-500 hover:-translate-y-1 reveal">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-5 text-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">Visual Grid Codec</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+          Data is packed into gray-level cells arranged in a grid across each video frame.
+          At 1920×1080: <strong class="text-white">78×43 = 3,354 cells</strong> per frame, each carrying 2 bits.
+        </p>
+        <div class="text-cyan-400 text-sm font-mono">838 bytes/frame · ~1.3 MB/min</div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="card-glass rounded-2xl p-8 glow-cyan-card transition-all duration-500 hover:-translate-y-1 reveal delay-1">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-5 text-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">MFSK Audio Channel</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+          Redundant audio track using 64-tone MFSK modulation. Each symbol is a
+          Hann-windowed sine burst decoded via Goertzel's algorithm.
+        </p>
+        <div class="text-purple-400 text-sm font-mono">~60 bps · survives AAC</div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="card-glass rounded-2xl p-8 glow-cyan-card transition-all duration-500 hover:-translate-y-1 reveal delay-2">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-5 text-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">Reed-Solomon ECC</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-4">
+          Per-frame error correction automatically matched to grid capacity.
+          ~10% parity shards correct compression artifacts from H.264 at CRF 18.
+        </p>
+        <div class="text-emerald-400 text-sm font-mono">Auto-matched · survives H.264</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section id="how-it-works" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">How it <span class="gradient-text-2">works</span></h2>
+      <p class="text-gray-400 max-w-xl mx-auto">The pipeline in two directions.</p>
+    </div>
+
+    <!-- Encode flow -->
+    <div class="card-glass rounded-2xl p-8 md:p-10 mb-8 reveal flow-group">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="text-xs font-semibold uppercase tracking-widest text-cyan-400">Encode</span>
+        <div class="h-px flex-1 bg-gradient-to-r from-cyan-500/30 to-transparent"></div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-sm font-mono">
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white">Input File</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">Split into frames</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300">RS Encode</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">Pack cells</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white">Render frames</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300">ffmpeg H.264</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white">Video file</span>
+      </div>
+    </div>
+
+    <!-- Decode flow -->
+    <div class="card-glass rounded-2xl p-8 md:p-10 reveal flow-group">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="text-xs font-semibold uppercase tracking-widest text-purple-400">Decode</span>
+        <div class="h-px flex-1 bg-gradient-to-r from-purple-500/30 to-transparent"></div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-sm font-mono">
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white">Video file</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300">ffmpeg extract</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">Read cells</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300">RS Decode</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">Reassemble</span>
+        <span class="flow-arrow">→</span>
+        <span class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white">Original file</span>
+      </div>
+    </div>
+
+    <!-- resolution note -->
+    <div class="mt-8 text-center text-sm text-gray-500 reveal">
+      Resolution is configurable via <code class="text-cyan-400 font-mono">--width</code> / <code class="text-cyan-400 font-mono">--height</code>.
+      Default <strong class="text-white">1920×1080</strong> produces a 78×43 cell grid.
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ QUICK START ═══════════════ -->
+<section id="quickstart" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Quick <span class="gradient-text-2">start</span></h2>
+      <p class="text-gray-400 max-w-xl mx-auto">Get up and running in two commands.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- install -->
+      <div class="card-glass rounded-2xl p-8 reveal">
+        <h3 class="text-lg font-semibold text-white mb-1">Install</h3>
+        <p class="text-gray-500 text-sm mb-4">From source or download a release.</p>
+        <div class="code-block text-sm">
+          <span class="cmt"># Build from source</span><br>
+          <span class="text-gray-500">$</span> <span class="cmd">git clone</span> https://github.com/fabricedge/ystore-go.git<br>
+          <span class="text-gray-500">$</span> <span class="cmd">cd</span> ystore-go && <span class="cmd">make build</span><br>
+          <br>
+          <span class="cmt"># Or download a pre-built binary from</span><br>
+          <span class="cmt"># https://github.com/fabricedge/ystore-go/releases</span>
+        </div>
+        <p class="text-gray-500 text-xs mt-3">Requires <a href="https://ffmpeg.org" class="text-cyan-400 hover:underline">ffmpeg</a> in PATH.</p>
+      </div>
+
+      <!-- basic usage -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-1">
+        <h3 class="text-lg font-semibold text-white mb-1">Basic usage</h3>
+        <p class="text-gray-500 text-sm mb-4">Encode, decode, verify.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--input</span> secret.pdf <span class="kw">--output</span> secret.mp4<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> secret.mp4 <span class="kw">--output</span> restored.pdf<br>
+          <span class="text-gray-500">$</span> diff secret.pdf restored.pdf<br>
+          <span class="cmt"># (no output = files match)</span>
+        </div>
+      </div>
+
+      <!-- multi-file -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-2">
+        <h3 class="text-lg font-semibold text-white mb-1">Multiple files</h3>
+        <p class="text-gray-500 text-sm mb-4">Bundle several files into one video.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--input</span> a.pdf <span class="kw">--input</span> b.pdf <span class="kw">--output</span> bundle.mp4<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--input</span> bundle.mp4 <span class="kw">--output-dir</span> ./extracted<br>
+          <span class="cmt"># extracted/a.pdf  extracted/b.pdf</span>
+        </div>
+      </div>
+
+      <!-- custom res -->
+      <div class="card-glass rounded-2xl p-8 reveal delay-3">
+        <h3 class="text-lg font-semibold text-white mb-1">Custom resolution</h3>
+        <p class="text-gray-500 text-sm mb-4">Smaller video, fewer cells per frame.</p>
+        <div class="code-block text-sm">
+          <span class="text-gray-500">$</span> <span class="cmd">ystore encode</span> <span class="kw">--width</span> 640 <span class="kw">--height</span> 480 <span class="kw">--input</span> data.txt<br>
+          <span class="text-gray-500">$</span> <span class="cmd">ystore decode</span> <span class="kw">--width</span> 640 <span class="kw">--height</span> 480 <span class="kw">--input</span> video.mp4
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ CLI REFERENCE ═══════════════ -->
+<section id="cli" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">CLI <span class="gradient-text-2">reference</span></h2>
+      <p class="text-gray-400 max-w-xl mx-auto">All flags for <code class="text-cyan-400 font-mono">ystore encode</code> and <code class="text-cyan-400 font-mono">ystore decode</code>.</p>
+    </div>
+
+    <div class="reveal">
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+        ystore encode
+      </h3>
+      <div class="card-glass rounded-2xl overflow-x-auto mb-12">
+        <table class="ref-table w-full text-sm">
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--input</code></td><td class="text-gray-500">—</td><td>Input file (repeatable)</td></tr>
+            <tr><td><code>--input-dir</code></td><td class="text-gray-500">—</td><td>Encode all files in a directory</td></tr>
+            <tr><td><code>--output</code></td><td><code>output.mp4</code></td><td>Output video file</td></tr>
+            <tr><td><code>--cell-size</code></td><td><code>24</code></td><td>Grid cell size in pixels</td></tr>
+            <tr><td><code>--border-size</code></td><td><code>24</code></td><td>Border width in pixels</td></tr>
+            <tr><td><code>--bits-per-cell</code></td><td><code>2</code></td><td>Bits per cell (1–8)</td></tr>
+            <tr><td><code>--width</code></td><td><code>1920</code></td><td>Video width in pixels</td></tr>
+            <tr><td><code>--height</code></td><td><code>1080</code></td><td>Video height in pixels</td></tr>
+            <tr><td><code>--fps</code></td><td><code>30</code></td><td>Output framerate</td></tr>
+            <tr><td><code>--crf</code></td><td><code>18</code></td><td>H.264 quality (0–51, lower=better)</td></tr>
+            <tr><td><code>--data-shards</code></td><td><code>0</code></td><td>RS data shards (0=auto)</td></tr>
+            <tr><td><code>--parity-shards</code></td><td><code>0</code></td><td>RS parity shards (0=auto)</td></tr>
+            <tr><td><code>--shard-size</code></td><td><code>0</code></td><td>Bytes per RS shard (0=auto)</td></tr>
+            <tr><td><code>--audio</code></td><td><code>false</code></td><td>Also encode into audio track</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+        ystore decode
+      </h3>
+      <div class="card-glass rounded-2xl overflow-x-auto">
+        <table class="ref-table w-full text-sm">
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--input</code></td><td class="text-gray-500">—</td><td>Input video file <span class="text-amber-400">(required)</span></td></tr>
+            <tr><td><code>--output</code></td><td><code>output.bin</code></td><td>Output data file</td></tr>
+            <tr><td><code>--output-dir</code></td><td class="text-gray-500">—</td><td>Extract archive to directory</td></tr>
+            <tr><td><code>--cell-size</code></td><td><code>24</code></td><td>Grid cell size in pixels</td></tr>
+            <tr><td><code>--border-size</code></td><td><code>24</code></td><td>Border width in pixels</td></tr>
+            <tr><td><code>--bits-per-cell</code></td><td><code>2</code></td><td>Bits per cell (1–8)</td></tr>
+            <tr><td><code>--width</code></td><td><code>1920</code></td><td>Video width (must match encode)</td></tr>
+            <tr><td><code>--height</code></td><td><code>1080</code></td><td>Video height (must match encode)</td></tr>
+            <tr><td><code>--fps</code></td><td><code>30</code></td><td>Framerate used during encode</td></tr>
+            <tr><td><code>--data-shards</code></td><td><code>0</code></td><td>RS data shards (0=auto)</td></tr>
+            <tr><td><code>--parity-shards</code></td><td><code>0</code></td><td>RS parity shards (0=auto)</td></tr>
+            <tr><td><code>--shard-size</code></td><td><code>0</code></td><td>Bytes per RS shard (0=auto)</td></tr>
+            <tr><td><code>--audio</code></td><td><code>false</code></td><td>Extract from audio instead</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-gray-500 reveal">
+      <code class="text-cyan-400 font-mono">ystore --version</code> prints the current version.
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ CONFIGURATION ═══════════════ -->
+<section id="config" class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Configuration <span class="gradient-text-2">tuning</span></h2>
+      <p class="text-gray-400 max-w-xl mx-auto">Key parameters that affect capacity, robustness, and file size.</p>
+    </div>
+
+    <div class="card-glass rounded-2xl overflow-hidden reveal">
+      <table class="ref-table w-full text-sm">
+        <thead><tr><th>Parameter</th><th>Effect</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>--width / --height</code></td>
+            <td>More pixels → more cells → more data per frame</td>
+            <td>1920×1080 for maximum capacity</td>
+          </tr>
+          <tr>
+            <td><code>--cell-size</code></td>
+            <td>Larger = more robust against compression, fewer cells</td>
+            <td>24 (default) for video platforms</td>
+          </tr>
+          <tr>
+            <td><code>--bits-per-cell</code></td>
+            <td>Higher = more data per cell, less robust</td>
+            <td>2 default; 1 for extreme robustness; 3–4 for experiments</td>
+          </tr>
+          <tr>
+            <td><code>--crf</code></td>
+            <td>Lower = better quality, larger file</td>
+            <td>18 default; 23 for smaller files</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ PROJECT STRUCTURE ═══════════════ -->
+<section class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Project <span class="gradient-text-2">structure</span></h2>
+    </div>
+
+    <div class="card-glass rounded-2xl p-8 md:p-10 reveal">
+      <div class="font-mono text-sm leading-relaxed">
+        <div class="text-cyan-400 font-semibold mb-2">ystore-go/</div>
+
+        <div class="pl-4 tree-line">
+          <div class="pl-4 py-0.5 text-gray-400">├── <span class="text-amber-300">cmd/</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">ystore/</span>         <span class="text-gray-600">Unified CLI</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">encode/</span>        <span class="text-gray-600">Standalone encode</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">└── <span class="text-white">decode/</span>        <span class="text-gray-600">Standalone decode</span></div>
+
+          <div class="pl-4 py-0.5 text-gray-400">├── <span class="text-amber-300">internal/</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">vcodec/</span>        <span class="text-gray-600">Visual grid codec</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">acodec/</span>        <span class="text-gray-600">MFSK audio codec</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">ecc/</span>          <span class="text-gray-600">Reed-Solomon</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">formats/</span>       <span class="text-gray-600">Frame headers + archive</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">├── <span class="text-white">pipeline/</span>      <span class="text-gray-600">Encode/decode orchestration</span></div>
+          <div class="pl-8 py-0.5 text-gray-400">└── <span class="text-white">version/</span>       <span class="text-gray-600">Version constant</span></div>
+
+          <div class="pl-4 py-0.5 text-gray-400">├── <span class="text-white">Makefile</span>        <span class="text-gray-600">Build, test, release</span></div>
+          <div class="pl-4 py-0.5 text-gray-400">├── <span class="text-white">README.md</span></div>
+          <div class="pl-4 py-0.5 text-gray-400">└── <span class="text-white">LICENSE</span>         <span class="text-gray-600">MIT</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider max-w-6xl mx-auto"></div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="py-16 px-6">
+  <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500">
+    <div class="flex items-center gap-3">
+      <span class="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold text-xs font-mono">YS</span>
+      <span>ystore-go &copy; 2026 &middot; <a href="LICENSE" class="text-cyan-400 hover:underline">MIT License</a></span>
+    </div>
+    <div class="flex items-center gap-6">
+      <a href="https://github.com/fabricedge/ystore-go" target="_blank" class="hover:text-white transition-colors">GitHub</a>
+      <a href="https://github.com/fabricedge/ystore-go/releases" target="_blank" class="hover:text-white transition-colors">Releases</a>
+      <a href="#features" class="hover:text-white transition-colors">Features</a>
+      <span class="flex items-center gap-1.5">
+        <span class="badge-dot" style="width:6px;height:6px;"></span>
+        v0.3.1
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════ SCROLL REVEAL ═══════════════ -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
