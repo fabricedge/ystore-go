@@ -10,6 +10,7 @@ import (
 	"github.com/katri/ystore-go/internal/ecc"
 	"github.com/katri/ystore-go/internal/formats"
 	"github.com/katri/ystore-go/internal/pipeline"
+	"github.com/katri/ystore-go/internal/version"
 	"github.com/katri/ystore-go/internal/vcodec"
 )
 
@@ -54,7 +55,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println("ystore-go encode v0.3.0")
+		fmt.Println("ystore-go encode " + version.Version)
 		return
 	}
 

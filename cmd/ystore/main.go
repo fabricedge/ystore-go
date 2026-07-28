@@ -10,6 +10,7 @@ import (
 	"github.com/katri/ystore-go/internal/ecc"
 	"github.com/katri/ystore-go/internal/formats"
 	"github.com/katri/ystore-go/internal/pipeline"
+	"github.com/katri/ystore-go/internal/version"
 	"github.com/katri/ystore-go/internal/vcodec"
 )
 
@@ -233,7 +234,7 @@ func main() {
 	log.SetFlags(0)
 
 	if len(os.Args) >= 2 && os.Args[1] == "--version" {
-		fmt.Println("ystore-go v0.3.0")
+		fmt.Println("ystore-go " + version.Version)
 		return
 	}
 

@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/katri/ystore-go)](https://goreportcard.com/report/github.com/katri/ystore-go)
 
-**Hide arbitrary data inside 1920×1080 H.264 video files (and their AAC audio
-track) in a way that survives video platform re-encoding.**
+**Hide arbitrary data inside H.264 video files (and their AAC audio track) in a
+way that survives video platform re-encoding. Default resolution 1920×1080,
+configurable to any size ≥64×64.**
 
 Data is stored as a visual grid of gray-level cells in each video frame,
 protected by Reed-Solomon error correction. An optional MFSK audio channel
@@ -47,8 +48,8 @@ Download the pre-built binary for your platform from the
 ystore encode --input secret.pdf --output video.mp4
 ```
 
-This produces a 1920×1080 H.264 MP4. Upload it to a video platform, share it,
-store it anywhere. The data survives re-encoding.
+This produces an H.264 MP4 (default 1920×1080). Upload it to a video platform,
+share it, store it anywhere. The data survives re-encoding.
 
 ### Encode multiple files (bundled)
 
@@ -79,6 +80,15 @@ ystore decode --input bundle.mp4 --output-dir ./extracted
 
 If the video contains a bundled archive, files are extracted to the given
 directory. Single files are written as `output.bin`.
+
+### Encode with custom resolution
+
+```bash
+ystore encode --input secret.pdf --width 640 --height 480 --output small.mp4
+```
+
+Smaller resolutions produce fewer cells per frame (less data per frame) but
+result in smaller video files. Width and height must match on encode and decode.
 
 ### With audio redundancy
 
@@ -141,16 +151,17 @@ backup if the video track is damaged.
 
 ```
 Input File → Split into frames → RS Encode →
-Pack into cell gray-levels → Render 1920×1080 frames →
+Pack into cell gray-levels → Render frames at configured resolution →
 ffmpeg → H.264 MP4 → Upload to video platform
 
 Download → ffmpeg extract frames → Read cell gray-levels →
 RS Decode → Reassemble → Original File
 ```
 
-Each frame is a grid of 78×43 = 3354 cells (24×24 px each).
-With 2 bits/cell, each frame stores 838 bytes of RS-protected data.
-At 30 fps the throughput is **~1.3 MB/min**.
+At the default 1920×1080 resolution, each frame is a grid of 78×43 = 3354
+cells (24×24 px each). With 2 bits/cell, each frame stores 838 bytes of
+RS-protected data. At 30 fps the throughput is **~1.3 MB/min**.
+Smaller resolutions proportionally reduce capacity.
 
 A guard band (4 px) around each cell avoids edge artifacts from H.264
 compression. Reed-Solomon corrects any remaining bit errors.
@@ -211,7 +222,8 @@ typical H.264 compression artifacts at CRF 18.
 │   ├── acodec/       MFSK audio codec (tone modulation, Goertzel)
 │   ├── ecc/          Reed-Solomon error correction
 │   ├── formats/      Frame header structs and serialisation
-│   └── pipeline/     Encode/decode orchestration (ffmpeg exec, temp files)
+│   ├── pipeline/     Encode/decode orchestration (ffmpeg exec, temp files)
+│   └── version/      Version constant
 ├── Makefile          Build, test, lint, release
 └── AGENTS.md         Context for AI coding agents
 ```
