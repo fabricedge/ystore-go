@@ -1,0 +1,30 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+ystore-encode
+ystore-decode
+
+# Test binary
+*.test
+
+# Output directories
+tmp/
+out/
+dist/
+releases/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Go
+vendor/
