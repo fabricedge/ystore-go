@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/katri/ystore-go/internal/acodec"
+	"github.com/katri/ystore-go/internal/crypto"
 	"github.com/katri/ystore-go/internal/ecc"
 	"github.com/katri/ystore-go/internal/formats"
 	"github.com/katri/ystore-go/internal/vcodec"
@@ -27,6 +28,7 @@ type EncodeConfig struct {
 	CRF        int
 	Audio      bool
 	Background string
+	Password   string
 }
 
 func DefaultEncodeConfig() (*EncodeConfig, error) {
@@ -153,6 +155,14 @@ func EncodeFile(inputPath string, cfg *EncodeConfig) error {
 }
 
 func EncodeBytes(data []byte, label string, cfg *EncodeConfig) error {
+	if cfg.Password != "" {
+		var err error
+		data, err = crypto.Encrypt(data, cfg.Password)
+		if err != nil {
+			return fmt.Errorf("encrypt: %w", err)
+		}
+	}
+
 	ffmpegPath, err := findFFmpeg()
 	if err != nil {
 		return fmt.Errorf("ffmpeg not found: %w", err)

@@ -31,6 +31,7 @@ func main() {
 	parityShards := flag.Int("parity-shards", 0, "Reed-Solomon parity shards (0=auto)")
 	shardSize := flag.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := flag.Bool("audio", false, "extract data from audio track instead of video")
+	password := flag.String("password", "", "decrypt data with password")
 
 	showVersion := flag.Bool("version", false, "show version")
 
@@ -84,6 +85,7 @@ func main() {
 		OutputDir: *outputDir,
 		FPS:       *fps,
 		Audio:     *audio,
+		Password:  *password,
 	}
 
 	log.Printf("Decoding: %s", *input)

@@ -47,6 +47,7 @@ func runEncode(args []string) error {
 	shardSize := fs.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := fs.Bool("audio", false, "also encode data into audio track")
 	background := fs.String("background", "", "embed cells into an existing video (path)")
+	password := fs.String("password", "", "encrypt data with password")
 
 	fs.Parse(args)
 
@@ -105,6 +106,7 @@ func runEncode(args []string) error {
 		CRF:        *crf,
 		Audio:      *audio,
 		Background: *background,
+		Password:   *password,
 	}
 
 	outDir := filepath.Dir(*output)
@@ -172,6 +174,7 @@ func runDecode(args []string) error {
 	parityShards := fs.Int("parity-shards", 0, "RS parity shards (0=auto)")
 	shardSize := fs.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := fs.Bool("audio", false, "extract data from audio track instead of video")
+	password := fs.String("password", "", "decrypt data with password")
 
 	fs.Parse(args)
 
@@ -218,6 +221,7 @@ func runDecode(args []string) error {
 		OutputDir: *outputDir,
 		FPS:       *fps,
 		Audio:     *audio,
+		Password:  *password,
 	}
 
 	log.Printf("Decoding: %s", *input)

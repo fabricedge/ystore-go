@@ -50,6 +50,7 @@ func main() {
 	shardSize := flag.Int("shard-size", 0, "bytes per RS shard (0=auto)")
 	audio := flag.Bool("audio", false, "also encode data into audio track")
 	background := flag.String("background", "", "embed cells into an existing video (path)")
+	password := flag.String("password", "", "encrypt data with password")
 
 	showVersion := flag.Bool("version", false, "show version")
 
@@ -130,6 +131,7 @@ func main() {
 		CRF:        *crf,
 		Audio:      *audio,
 		Background: *background,
+		Password:   *password,
 	}
 
 	payloadPerFrame := cfg.PayloadPerFrame()

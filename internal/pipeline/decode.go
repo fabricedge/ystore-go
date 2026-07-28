@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/katri/ystore-go/internal/acodec"
+	"github.com/katri/ystore-go/internal/crypto"
 	"github.com/katri/ystore-go/internal/ecc"
 	"github.com/katri/ystore-go/internal/formats"
 	"github.com/katri/ystore-go/internal/vcodec"
@@ -24,6 +25,7 @@ type DecodeConfig struct {
 	OutputDir string
 	FPS       int
 	Audio     bool
+	Password  string
 }
 
 func DefaultDecodeConfig() (*DecodeConfig, error) {
@@ -158,6 +160,14 @@ func DecodeFile(cfg *DecodeConfig) error {
 			if err == nil && len(audioDecoded) > 0 {
 				reconstructed = audioDecoded
 			}
+		}
+	}
+
+	if cfg.Password != "" {
+		var err error
+		reconstructed, err = crypto.Decrypt(reconstructed, cfg.Password)
+		if err != nil {
+			return fmt.Errorf("decrypt: %w", err)
 		}
 	}
 
